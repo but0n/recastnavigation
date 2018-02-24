@@ -165,11 +165,11 @@ int main(int /*argc*/, char** /*argv*/)
 	int logScroll = 0;
 	int toolsScroll = 0;
 	
-	string sampleName = "Choose Sample...";
+	string sampleName = "Choose Sample...";	// Sample选项框的默认名称
 	
 	vector<string> files;
 	const string meshesFolder = "Meshes";
-	string meshName = "Choose Mesh...";
+	string meshName = "Choose Mesh...";		// Mesh选项框的默认名称
 	
 	float markerPosition[3] = {0, 0, 0};
 	bool markerPositionSet = false;
@@ -501,7 +501,9 @@ int main(int /*argc*/, char** /*argv*/)
 		glLoadIdentity();
 		
 		mouseOverMenu = false;
-		
+
+// 使用imgui库绘制功能栏
+
 		imguiBeginFrame(mousePos[0], mousePos[1], mouseButtonMask, mouseScroll);
 		
 		if (sample)
@@ -514,7 +516,7 @@ int main(int /*argc*/, char** /*argv*/)
 				mouseOverMenu = true;
 		}
 
-		// Help text.
+		// Help text. 帮助文本
 		if (showMenu)
 		{
 			const char msg[] = "W/S/A/D: Move  RMB: Rotate";
@@ -523,31 +525,35 @@ int main(int /*argc*/, char** /*argv*/)
 		
 		if (showMenu)
 		{
+			// 绘制最右侧 Properties 窗口栏
 			if (imguiBeginScrollArea("Properties", width-250-10, 10, 250, height-20, &propScroll))
 				mouseOverMenu = true;
 
+			// 绘制 Properties 下的显示选项
 			if (imguiCheck("Show Log", showLog))
 				showLog = !showLog;
 			if (imguiCheck("Show Tools", showTools))
 				showTools = !showTools;
 
-			imguiSeparator();
+			imguiSeparator(); // 绘制一个空行
 			imguiLabel("Sample");
-			if (imguiButton(sampleName.c_str()))
+			if (imguiButton(sampleName.c_str()))	// 绘制一个按钮, 显示sampleName文字
 			{
+				// 该按钮负责左侧窗口以及子内容的显示状态 toggle
 				if (showSample)
 				{
 					showSample = false;
 				}
 				else
 				{
-					showSample = true;
+					showSample = true; // 显示 Sample 内容 关闭 Levels, TestCases
+
 					showLevels = false;
 					showTestCases = false;
 				}
 			}
 			
-			imguiSeparator();
+			imguiSeparator(); // 绘制一个空行
 			imguiLabel("Input Mesh");
 			if (imguiButton(meshName.c_str()))
 			{
@@ -557,9 +563,10 @@ int main(int /*argc*/, char** /*argv*/)
 				}
 				else
 				{
+					showLevels = true; // 显示 Levels 内容 关闭 Sample, TestCases
+
 					showSample = false;
 					showTestCases = false;
-					showLevels = true;
 					scanDirectory(meshesFolder, ".obj", files);
 					scanDirectoryAppend(meshesFolder, ".gset", files);
 				}
@@ -572,7 +579,7 @@ int main(int /*argc*/, char** /*argv*/)
 						 geom->getMesh()->getTriCount()/1000.0f);
 				imguiValue(text);
 			}
-			imguiSeparator();
+			imguiSeparator(); // 绘制一个空行
 
 			if (geom && sample)
 			{
@@ -595,7 +602,7 @@ int main(int /*argc*/, char** /*argv*/)
 					test = 0;
 				}
 
-				imguiSeparator();
+				imguiSeparator(); // 绘制一个空行
 			}
 			
 			if (sample)
