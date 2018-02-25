@@ -387,9 +387,11 @@ bool Sample_SoloMesh::handleBuild()
 	
 	//
 	// Step 1. Initialize build config.
+	// 第一步: 初始化 build 配置
 	//
 	
 	// Init build configuration from GUI
+	// 从 GUI 获取配置参数
 	memset(&m_cfg, 0, sizeof(m_cfg));
 	m_cfg.cs = m_cellSize;
 	m_cfg.ch = m_cellHeight;
@@ -408,31 +410,42 @@ bool Sample_SoloMesh::handleBuild()
 	// Set the area where the navigation will be build.
 	// Here the bounds of the input mesh are used, but the
 	// area could be specified by an user defined box, etc.
+
+	// 开辟构建空间
+	// 获取NavMeshBoundsMin 和 NavMeshBoundsMax 参数
+	// 根据 Cell Size 计算网格大小
 	rcVcopy(m_cfg.bmin, bmin);
 	rcVcopy(m_cfg.bmax, bmax);
 	rcCalcGridSize(m_cfg.bmin, m_cfg.bmax, m_cfg.cs, &m_cfg.width, &m_cfg.height);
 
 	// Reset build times gathering.
+	// 重置构建计时
 	m_ctx->resetTimers();
 
 	// Start the build process.	
+	// 开始计时
 	m_ctx->startTimer(RC_TIMER_TOTAL);
 	
+	// 打 log
 	m_ctx->log(RC_LOG_PROGRESS, "Building navigation:");
 	m_ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", m_cfg.width, m_cfg.height);
 	m_ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", nverts/1000.0f, ntris/1000.0f);
 	
 	//
 	// Step 2. Rasterize input polygon soup.
+	// 第二步: 体素化
 	//
 	
 	// Allocate voxel heightfield where we rasterize our input data to.
+	// 在 Heap 动态分配一块空间 用来存储体素化后的三维高度场
 	m_solid = rcAllocHeightfield();
 	if (!m_solid)
 	{
+		// 如果为 Null, 则 Heap 的空间不够分配 solid 了
 		m_ctx->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'solid'.");
 		return false;
 	}
+	// 初始化该高度场
 	if (!rcCreateHeightfield(m_ctx, *m_solid, m_cfg.width, m_cfg.height, m_cfg.bmin, m_cfg.bmax, m_cfg.cs, m_cfg.ch))
 	{
 		m_ctx->log(RC_LOG_ERROR, "buildNavigation: Could not create solid heightfield.");
@@ -442,6 +455,7 @@ bool Sample_SoloMesh::handleBuild()
 	// Allocate array that can hold triangle area types.
 	// If you have multiple meshes you need to process, allocate
 	// and array which can hold the max number of triangles you need to process.
+	// 分配 Heap 空间存储三角形数据
 	m_triareas = new unsigned char[ntris];
 	if (!m_triareas)
 	{
@@ -452,7 +466,9 @@ bool Sample_SoloMesh::handleBuild()
 	// Find triangles which are walkable based on their slope and rasterize them.
 	// If your input data is multiple meshes, you can transform them here, calculate
 	// the are type for each of the meshes and rasterize them.
-	memset(m_triareas, 0, ntris*sizeof(unsigned char));
+	memset(m_triareas, 0, ntris*sizeof(unsigned char)); // 清空数据
+	// 根据倾斜度查找可行走的三角形 并且光栅化
+	// 如果三角形可行走 则将三角形ID标记为 RC_WALKABLE_AREA
 	rcMarkWalkableTriangles(m_ctx, m_cfg.walkableSlopeAngle, verts, nverts, tris, ntris, m_triareas);
 	if (!rcRasterizeTriangles(m_ctx, verts, nverts, tris, m_triareas, ntris, *m_solid, m_cfg.walkableClimb))
 	{
@@ -460,6 +476,7 @@ bool Sample_SoloMesh::handleBuild()
 		return false;
 	}
 
+	// 是否 Keep Itermediate Results
 	if (!m_keepInterResults)
 	{
 		delete [] m_triareas;
@@ -468,6 +485,7 @@ bool Sample_SoloMesh::handleBuild()
 	
 	//
 	// Step 3. Filter walkables surfaces.
+	// 第三步: 过滤可走表面
 	//
 	
 	// Once all geoemtry is rasterized, we do initial pass of filtering to

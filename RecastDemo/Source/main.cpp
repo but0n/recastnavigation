@@ -571,7 +571,7 @@ int main(int /*argc*/, char** /*argv*/)
 					scanDirectoryAppend(meshesFolder, ".gset", files);
 				}
 			}
-			if (geom)
+			if (geom)	// 显示几何信息: 顶点数量 三角形数量
 			{
 				char text[64];
 				snprintf(text, 64, "Verts: %.1fk  Tris: %.1fk",
@@ -583,7 +583,7 @@ int main(int /*argc*/, char** /*argv*/)
 
 			if (geom && sample)
 			{
-				imguiSeparatorLine();
+				imguiSeparatorLine(); // 绘制分割横线
 				
 				sample->handleSettings();
 
